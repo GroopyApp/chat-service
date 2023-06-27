@@ -6,9 +6,9 @@ public class Utils {
         return "chat--" + topicName.toLowerCase().replaceAll(" ", "-");
     }
 
-    public static String generateChatGroupName(String topicName) {
+    public static String generateChatGroupName(String topicName, String uuid) {
         return topicName != null && !topicName.isBlank() ?
-                "group--" + topicName.toLowerCase().replaceAll(" ", "-") :
+                "group--" + topicName.toLowerCase().replaceAll(" ", "-") + "-" + uuid :
                 "group--main";
     }
 }

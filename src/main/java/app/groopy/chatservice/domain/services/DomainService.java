@@ -33,7 +33,7 @@ public class DomainService {
         LOGGER.info("trying to create a chat room: {}", request);
         var result = chatProviderRepository.createChannel(CreateChatChannelRequest.builder()
                         .channelName(generateChatName(request.getChannelName()))
-                        .groupName(generateChatGroupName(request.getGroupName()))
+                        .groupName(generateChatGroupName(request.getGroupName(), request.getUuid()))
                         .uuid(request.getUuid())
                 .build());
         return ChatInfoDto.builder()
