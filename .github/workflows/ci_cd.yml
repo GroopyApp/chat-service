@@ -39,4 +39,4 @@ jobs:
           username: ${{ secrets.SSH_DEV_USER }}
           key: ${{ secrets.SSH_DEV_KEY }}
           script: |
-            cd groopy && bash run.sh
+            cd ~/dev/groopy && bash run.sh
