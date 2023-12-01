@@ -1,5 +1,6 @@
 package app.groopy.chatservice.presentation.mapper;
 
+import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
 import app.groopy.chatservice.domain.models.requests.CreateChatRoomRequestDto;
 import app.groopy.chatservice.domain.models.requests.ChatDetailsRequestDto;
 import app.groopy.protobuf.ChatServiceProto;
@@ -16,6 +17,9 @@ public interface PresentationMapper {
     CreateChatRoomRequestDto map(ChatServiceProto.CreateChatRoomRequest input);
 
     ChatDetailsRequestDto map(ChatServiceProto.ChatDetailsRequest input);
+
+    @Mappings({@Mapping(target = "message", source = "body")})
+    ChatMessageRequestDto map(ChatServiceProto.ChatMessageRequest input);
 
     default LocalDateTime toLocalDate(String input) {
         return LocalDateTime.parse(input);

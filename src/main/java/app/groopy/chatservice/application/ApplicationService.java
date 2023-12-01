@@ -3,6 +3,7 @@ package app.groopy.chatservice.application;
 import app.groopy.chatservice.application.exceptions.ApplicationException;
 import app.groopy.chatservice.domain.models.entities.ChatInfoDto;
 import app.groopy.chatservice.domain.models.requests.ChatDetailsRequestDto;
+import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
 import app.groopy.chatservice.domain.models.requests.CreateChatRoomRequestDto;
 import app.groopy.chatservice.domain.resolver.InfrastructureExceptionResolver;
 import app.groopy.chatservice.domain.services.DomainService;
@@ -43,4 +44,14 @@ public class ApplicationService {
         } catch (Exception e) {
             throw InfrastructureExceptionResolver.resolve(e);
         }    }
+
+    public Integer fireMessage(ChatMessageRequestDto chatMessageRequestDto) throws ApplicationException {
+        try {
+            var result = domainService.fireMessage(chatMessageRequestDto);
+            LOGGER.info("message fired successfully: {}", result);
+            return result;
+        } catch (Exception e) {
+            throw InfrastructureExceptionResolver.resolve(e);
+        }
+    }
 }

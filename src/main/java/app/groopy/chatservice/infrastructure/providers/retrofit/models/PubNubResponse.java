@@ -5,7 +5,7 @@ import lombok.Value;
 
 @Value
 @ToString
-public class PubNubCreateChannelResponse {
+public class PubNubResponse {
     String service;
     String status;
     Boolean error;

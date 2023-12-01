@@ -1,5 +1,6 @@
 package app.groopy.chatservice.infrastructure.providers;
 
+import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
 import app.groopy.chatservice.infrastructure.models.ChatInfo;
 import app.groopy.chatservice.infrastructure.models.CreateChatChannelRequest;
 import app.groopy.chatservice.infrastructure.models.CreateChatChannelResponse;
@@ -8,11 +9,12 @@ import app.groopy.chatservice.infrastructure.providers.db.models.ChatEntity;
 import app.groopy.chatservice.infrastructure.providers.exceptions.DatabaseException;
 import app.groopy.chatservice.infrastructure.providers.exceptions.PubNubException;
 import app.groopy.chatservice.infrastructure.providers.mappers.ProviderMapper;
-import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubCreateChannelResponse;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.ChatMessageRequest;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubResponse;
 import app.groopy.chatservice.infrastructure.providers.retrofit.PubNubRepository;
 import app.groopy.chatservice.infrastructure.repository.ChatProviderRepository;
+import com.google.gson.GsonBuilder;
 import lombok.SneakyThrows;
-import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -41,7 +44,10 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
                                       ProviderMapper providerMapper) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(pubnubHost)
-                .addConverterFactory(GsonConverterFactory.create())
+                .addConverterFactory(ScalarsConverterFactory.create()) //important
+                .addConverterFactory(GsonConverterFactory.create(new GsonBuilder()
+                        .setLenient()
+                        .create()))
                 .build();
         this.pubNubRepository = retrofit.create(PubNubRepository.class);
         this.databaseRepository = databaseRepository;
@@ -63,9 +69,10 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
             throw new DatabaseException(e.getMessage());
         }
 
-        Response<PubNubCreateChannelResponse> createChannelResponse = pubNubRepository.createChannel(
-                request.getGroupName(),
+        Response<PubNubResponse> createChannelResponse = pubNubRepository.createChannel(
                 request.getChannelName(),
+                "callback",
+                request.getGroupName(),
                 request.getUuid()
         ).execute();
 
@@ -91,5 +98,24 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
         return databaseRepository.findAllByUuidIn(ids).stream()
                 .map(providerMapper::map)
                 .toList();
+    }
+
+    @SneakyThrows
+    public Integer fireMessage(ChatMessageRequestDto chatMessageRequestDto) {
+        var response = pubNubRepository.fireMessage(
+                chatMessageRequestDto.getChannelId(),
+                "callback",
+                chatMessageRequestDto.getGroupId(),
+                ChatMessageRequest.builder()
+                        .message(chatMessageRequestDto.getMessage())
+                        .senderId(chatMessageRequestDto.getSenderId())
+                        .build())
+                .execute();
+        if (response.code() != 200) {
+            LOGGER.error("An error occurred trying to send the message: request={}, response={}", chatMessageRequestDto, response.errorBody());
+            throw new PubNubException("An error occurred trying to send the message");
+        }
+        //TODO investigate if it's worth to save the message in the database
+        return response.code();
     }
 }

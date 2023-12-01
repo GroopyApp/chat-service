@@ -2,6 +2,7 @@ package app.groopy.chatservice.domain.services;
 
 import app.groopy.chatservice.application.mapper.ApplicationMapper;
 import app.groopy.chatservice.domain.models.entities.ChatInfoDto;
+import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
 import app.groopy.chatservice.domain.models.requests.CreateChatRoomRequestDto;
 import app.groopy.chatservice.infrastructure.models.CreateChatChannelRequest;
 import app.groopy.chatservice.infrastructure.repository.ChatProviderRepository;
@@ -53,5 +54,10 @@ public class DomainService {
                 .groupName(chatInfo.getGroupName())
                 .uuid(chatInfo.getUuid())
                 .build()).toList();
+    }
+
+    public Integer fireMessage(ChatMessageRequestDto chatMessageRequestDto) {
+        LOGGER.info("trying to fire a message: {}", chatMessageRequestDto);
+        return chatProviderRepository.fireMessage(chatMessageRequestDto);
     }
 }

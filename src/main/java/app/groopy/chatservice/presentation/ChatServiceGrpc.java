@@ -61,4 +61,18 @@ public class ChatServiceGrpc extends app.groopy.protobuf.ChatServiceGrpc.ChatSer
             responseObserver.onError(ApplicationExceptionResolver.resolve(e));
         }
     }
+
+    @Override
+    public void sendMessage(ChatServiceProto.ChatMessageRequest request, StreamObserver<ChatServiceProto.StatusResponse> responseObserver) {
+        LOGGER.info("Processing ChatMessageRequest {}", request);
+        try {
+            int status = applicationService.fireMessage(presentationMapper.map(request));
+            responseObserver.onNext(ChatServiceProto.StatusResponse.newBuilder()
+                    .setStatus(status)
+                    .build());
+            responseObserver.onCompleted();
+        } catch (ApplicationException e) {
+            responseObserver.onError(ApplicationExceptionResolver.resolve(e));
+        }
+    }
 }
