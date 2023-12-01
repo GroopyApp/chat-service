@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static app.groopy.chatservice.domain.utils.Utils.generateChatGroupName;
 import static app.groopy.chatservice.domain.utils.Utils.generateChatName;
 
@@ -41,5 +43,15 @@ public class DomainService {
                 .groupName(result.getGroupName())
                 .uuid(request.getUuid())
                 .build();
+    }
+
+    public List<ChatInfoDto> get(List<String> ids) {
+        LOGGER.info("trying to get chat rooms: {}", ids);
+        var result = chatProviderRepository.getChatInfo(ids);
+        return result.stream().map(chatInfo -> ChatInfoDto.builder()
+                .channelName(chatInfo.getChatName())
+                .groupName(chatInfo.getGroupName())
+                .uuid(chatInfo.getUuid())
+                .build()).toList();
     }
 }

@@ -1,7 +1,8 @@
 package app.groopy.chatservice.infrastructure.providers.exceptions;
 
-public class PubNubException extends Exception {
-    public PubNubException(String message) {
+public class DatabaseException extends Throwable {
+
+    public DatabaseException(String message) {
         super(message);
     }
 }

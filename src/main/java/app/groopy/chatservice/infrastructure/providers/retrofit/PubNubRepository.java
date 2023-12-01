@@ -1,6 +1,6 @@
 package app.groopy.chatservice.infrastructure.providers.retrofit;
 
-import app.groopy.chatservice.infrastructure.providers.models.PubNubCreateChannelResponse;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubCreateChannelResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;

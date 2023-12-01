@@ -1,8 +1,10 @@
-package app.groopy.chatservice.infrastructure.providers.models;
+package app.groopy.chatservice.infrastructure.providers.retrofit.models;
 
+import lombok.ToString;
 import lombok.Value;
 
 @Value
+@ToString
 public class PubNubCreateChannelResponse {
     String service;
     String status;
