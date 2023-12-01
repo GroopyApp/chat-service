@@ -18,7 +18,7 @@ public interface PubNubRepository {
     String FIRE_MESSAGE_ENDPOINT = "/publish/" + PUBLISH_HEY + "/" + SUBSCRIBE_KEY + "/0/{channel}/{callback}?store=1";
 
     @GET(ADDING_CHANNEL_ENDPOINT)
-    Call<PubNubResponse> createChannel(
+    Call<String> createChannel(
             @Path("channel") String channel,
             @Path("callback") String callback,
             @Query("channel-group") String group,

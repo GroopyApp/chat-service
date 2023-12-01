@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static app.groopy.chatservice.domain.utils.Utils.generateChatGroupName;
 import static app.groopy.chatservice.domain.utils.Utils.generateChatName;
 
 @Component
@@ -36,7 +35,7 @@ public class DomainService {
         LOGGER.info("trying to create a chat room: {}", request);
         var result = chatProviderRepository.createChannel(CreateChatChannelRequest.builder()
                         .channelName(generateChatName(request.getChannelName()))
-                        .groupName(generateChatGroupName(request.getGroupName(), request.getUuid()))
+                        .groupName(request.getGroupName())
                         .uuid(request.getUuid())
                 .build());
         return ChatInfoDto.builder()

@@ -69,20 +69,20 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
             throw new DatabaseException(e.getMessage());
         }
 
-        Response<PubNubResponse> createChannelResponse = pubNubRepository.createChannel(
+        Response<String> createChannelResponse = pubNubRepository.createChannel(
                 request.getChannelName(),
                 "callback",
                 request.getGroupName(),
                 request.getUuid()
         ).execute();
 
-        if (!createChannelResponse.isSuccessful() || (createChannelResponse.body() != null && createChannelResponse.body().getError())) {
+        if (!createChannelResponse.isSuccessful()) {
             LOGGER.error("An error occurred trying to create the chat room: request={}, error={}", request, createChannelResponse.errorBody());
             databaseRepository.delete(chatEntity);
             throw new PubNubException(createChannelResponse.errorBody() != null ?
                     createChannelResponse.errorBody().toString() :
                     createChannelResponse.body() != null ?
-                            createChannelResponse.body().getMessage() :
+                            createChannelResponse.body() :
                             "Unknown error");
         }
 
