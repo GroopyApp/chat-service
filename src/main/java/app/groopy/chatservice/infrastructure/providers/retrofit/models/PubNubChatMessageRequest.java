@@ -7,7 +7,7 @@ import lombok.Builder;
 import java.io.Serializable;
 
 @Builder
-public class ChatMessageRequest implements Serializable {
+public class PubNubChatMessageRequest implements Serializable {
 
     @Expose
     @SerializedName("message")

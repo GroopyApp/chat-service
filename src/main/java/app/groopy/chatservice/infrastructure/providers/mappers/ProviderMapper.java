@@ -1,6 +1,7 @@
 package app.groopy.chatservice.infrastructure.providers.mappers;
 
-import app.groopy.chatservice.infrastructure.models.ChatInfo;
+import app.groopy.chatservice.infrastructure.models.chathistory.ChatHistoryRecord;
+import app.groopy.chatservice.infrastructure.models.chatinfo.ChatInfo;
 import app.groopy.chatservice.infrastructure.providers.db.models.ChatEntity;
 import org.mapstruct.CollectionMappingStrategy;
 import org.mapstruct.Mapper;

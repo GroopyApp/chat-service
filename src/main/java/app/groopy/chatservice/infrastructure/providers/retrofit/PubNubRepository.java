@@ -1,12 +1,9 @@
 package app.groopy.chatservice.infrastructure.providers.retrofit;
 
-import app.groopy.chatservice.infrastructure.providers.retrofit.models.ChatMessageRequest;
-import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubResponse;
-import com.google.gson.Gson;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubChatMessageRequest;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubChatHistoryResponse;
 import retrofit2.Call;
 import retrofit2.http.*;
-
-import java.util.List;
 
 public interface PubNubRepository {
 
@@ -16,6 +13,7 @@ public interface PubNubRepository {
 
     String ADDING_CHANNEL_ENDPOINT = "/v2/subscribe/" + SUBSCRIBE_KEY + "/{channel}/{callback}";
     String FIRE_MESSAGE_ENDPOINT = "/publish/" + PUBLISH_HEY + "/" + SUBSCRIBE_KEY + "/0/{channel}/{callback}?store=1";
+    String HISTORY_ENDPOINT = "/v3/history/sub-key/" + SUBSCRIBE_KEY + "/channel/{channels}?max=1000";
 
     @GET(ADDING_CHANNEL_ENDPOINT)
     Call<String> createChannel(
@@ -30,5 +28,11 @@ public interface PubNubRepository {
             @Path("channel") String channel,
             @Path("callback") String callback,
             @Query("space-id") String group,
-            @Body ChatMessageRequest message);
+            @Body PubNubChatMessageRequest message);
+
+    @GET(HISTORY_ENDPOINT)
+    Call<PubNubChatHistoryResponse> getHistory(
+            @Path("channels") String channels,
+            @Query("start") Long startDateTime,
+            @Query("end") Long endDateTime);
 }

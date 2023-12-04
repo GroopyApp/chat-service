@@ -75,4 +75,30 @@ public class ChatServiceGrpc extends app.groopy.protobuf.ChatServiceGrpc.ChatSer
             responseObserver.onError(ApplicationExceptionResolver.resolve(e));
         }
     }
+
+    @Override
+    public void getHistory(ChatServiceProto.ChatHistoryRequest request, StreamObserver<ChatServiceProto.ChatHistoryResponse> responseObserver) {
+        LOGGER.info("Processing ChatHistoryRequest {}", request);
+        try {
+            var data = applicationService.getHistory(presentationMapper.map(request));
+            responseObserver.onNext(ChatServiceProto.ChatHistoryResponse.newBuilder()
+                    .addAllHistory(data.entrySet().stream().map(chatHistoryEntry ->
+                                    ChatServiceProto.ChatHistory.newBuilder()
+                                            .setChannelId(chatHistoryEntry.getKey())
+                                            .addAllMessages(chatHistoryEntry.getValue().stream().map(message ->
+                                                    ChatServiceProto.ChatMessage.newBuilder()
+                                                            .setBody(message.getBody())
+                                                            .setGroupId(message.getGroupId())
+                                                            .setDateTime(message.getDateTime())
+                                                            .setSenderId(message.getSenderId())
+                                                            .build())
+                                                    .toList())
+                                            .build())
+                            .toList())
+                    .build());
+            responseObserver.onCompleted();
+        } catch (ApplicationException e) {
+            responseObserver.onError(ApplicationExceptionResolver.resolve(e));
+        }
+    }
 }

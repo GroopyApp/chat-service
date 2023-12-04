@@ -8,6 +8,7 @@ service ChatService {
   rpc createChannel (CreateChatRoomRequest) returns (CreateChatRoomResponse) {};
   rpc getDetails (ChatDetailsRequest) returns (ChatDetailsResponse) {};
   rpc sendMessage (ChatMessageRequest) returns (StatusResponse) {};
+  rpc getHistory (ChatHistoryRequest) returns (ChatHistoryResponse) {};
 }
 
 message CreateChatRoomRequest {
@@ -37,6 +38,27 @@ message ChatMessageRequest {
   string group_id = 4;
 }
 
+message ChatHistoryRequest {
+  repeated string channels = 1;
+  string date_from = 2;
+  string date_to = 3;
+}
+
+message ChatHistoryResponse {
+  repeated ChatHistory history = 1;
+}
+
+message ChatHistory {
+  string channel_id = 1;
+  repeated ChatMessage messages = 2;
+}
+
+message ChatMessage {
+  string sender_id = 1;
+  string body = 2;
+  string group_id = 3;
+  string date_time = 4;
+}
 
 message ChatDetails {
   string chat_id = 1;

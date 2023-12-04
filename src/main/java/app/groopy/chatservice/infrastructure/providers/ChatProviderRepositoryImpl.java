@@ -1,17 +1,23 @@
 package app.groopy.chatservice.infrastructure.providers;
 
-import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
-import app.groopy.chatservice.infrastructure.models.ChatInfo;
-import app.groopy.chatservice.infrastructure.models.CreateChatChannelRequest;
-import app.groopy.chatservice.infrastructure.models.CreateChatChannelResponse;
+import app.groopy.chatservice.infrastructure.models.chathistory.ChatHistoryRecord;
+import app.groopy.chatservice.infrastructure.models.chathistory.ChatHistoryRequest;
+import app.groopy.chatservice.infrastructure.models.chathistory.ChatHistoryResponse;
+import app.groopy.chatservice.infrastructure.models.chatinfo.ChatInfoRequest;
+import app.groopy.chatservice.infrastructure.models.chatinfo.ChatInfoResponse;
+import app.groopy.chatservice.infrastructure.models.createchannel.CreateChatChannelRequest;
+import app.groopy.chatservice.infrastructure.models.createchannel.CreateChatChannelResponse;
+import app.groopy.chatservice.infrastructure.models.firemessage.FireMessageRequest;
+import app.groopy.chatservice.infrastructure.models.firemessage.FireMessageResponse;
 import app.groopy.chatservice.infrastructure.providers.db.DatabaseRepository;
 import app.groopy.chatservice.infrastructure.providers.db.models.ChatEntity;
 import app.groopy.chatservice.infrastructure.providers.exceptions.DatabaseException;
 import app.groopy.chatservice.infrastructure.providers.exceptions.PubNubException;
 import app.groopy.chatservice.infrastructure.providers.mappers.ProviderMapper;
-import app.groopy.chatservice.infrastructure.providers.retrofit.models.ChatMessageRequest;
-import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubResponse;
 import app.groopy.chatservice.infrastructure.providers.retrofit.PubNubRepository;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubChatHistoryResponse;
+import app.groopy.chatservice.infrastructure.providers.retrofit.models.PubNubChatMessageRequest;
+import app.groopy.chatservice.infrastructure.providers.retrofit.utils.TimeTokenConverter;
 import app.groopy.chatservice.infrastructure.repository.ChatProviderRepository;
 import com.google.gson.GsonBuilder;
 import lombok.SneakyThrows;
@@ -27,6 +33,8 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatProviderRepositoryImpl implements ChatProviderRepository {
@@ -94,28 +102,70 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
     }
 
     @Override
-    public List<ChatInfo> getChatInfo(List<String> ids) {
-        return databaseRepository.findAllByUuidIn(ids).stream()
-                .map(providerMapper::map)
-                .toList();
+    public ChatInfoResponse getChatInfo(ChatInfoRequest request) {
+        if (request.getIds() != null && !request.getIds().isEmpty()) {
+            return ChatInfoResponse.builder().chatInfo(
+                            databaseRepository.findAllByUuidIn(request.getIds()).stream()
+                                    .map(providerMapper::map)
+                                    .toList())
+                    .build();
+        }
+        if (request.getChannels() != null && !request.getChannels().isEmpty()) {
+            return ChatInfoResponse.builder().chatInfo(
+                            databaseRepository.findAllByChannelNameIn(request.getChannels()).stream()
+                                    .map(providerMapper::map)
+                                    .toList())
+                    .build();
+        }
+        return ChatInfoResponse.builder().build();
     }
 
     @SneakyThrows
-    public Integer fireMessage(ChatMessageRequestDto chatMessageRequestDto) {
+    public FireMessageResponse fireMessage(FireMessageRequest fireMessageRequest) {
         var response = pubNubRepository.fireMessage(
-                chatMessageRequestDto.getChannelId(),
+                fireMessageRequest.getChannelId(),
                 "callback",
-                chatMessageRequestDto.getGroupId(),
-                ChatMessageRequest.builder()
-                        .message(chatMessageRequestDto.getMessage())
-                        .senderId(chatMessageRequestDto.getSenderId())
+                fireMessageRequest.getGroupId(),
+                        PubNubChatMessageRequest.builder()
+                        .message(fireMessageRequest.getMessage())
+                        .senderId(fireMessageRequest.getSenderId())
                         .build())
                 .execute();
         if (response.code() != 200) {
-            LOGGER.error("An error occurred trying to send the message: request={}, response={}", chatMessageRequestDto, response.errorBody());
+            LOGGER.error("An error occurred trying to send the message: request={}, response={}", fireMessageRequest, response.errorBody());
             throw new PubNubException("An error occurred trying to send the message");
         }
         //TODO investigate if it's worth to save the message in the database
-        return response.code();
+        return FireMessageResponse.builder()
+                .status(response.code())
+                .build();
+    }
+
+    @SneakyThrows
+    public ChatHistoryResponse getChatHistory(ChatHistoryRequest request) {
+
+        LocalDateTime dateFrom = request.getStart() != null ? request.getStart() : LocalDateTime.now().minusDays(7);
+        LocalDateTime dateTo = request.getEnd() != null ? request.getEnd() : LocalDateTime.now();
+
+        Response<PubNubChatHistoryResponse> response = pubNubRepository.getHistory(
+                String.join(",", request.getChannels()), TimeTokenConverter.toTimeToken(dateFrom),
+                TimeTokenConverter.toTimeToken(dateTo)).execute();
+
+        if (!response.isSuccessful()) {
+            LOGGER.error("An error occurred trying to fetch chat history: request={}, error={}", request, response.errorBody());
+            throw new PubNubException(response.errorBody() != null ?
+                    response.errorBody().toString() : "Unknown error");
+        }
+
+        LOGGER.info("Chat history fetched successfully: response={}", response.body());
+        return ChatHistoryResponse.builder()
+                .chatHistory(response.body().getChannels().entrySet().stream().collect(
+                        Collectors.toMap(Map.Entry::getKey,
+                                entry -> entry.getValue().stream().map(elem -> ChatHistoryRecord.builder()
+                                .message(elem.getMessage().getMessage())
+                                .senderId(elem.getMessage().getSenderId())
+                                .dateTime(TimeTokenConverter.toLocalDateTime(elem.getTimetoken()))
+                                .build()).toList())))
+                .build();
     }
 }

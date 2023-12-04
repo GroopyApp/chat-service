@@ -2,7 +2,9 @@ package app.groopy.chatservice.application;
 
 import app.groopy.chatservice.application.exceptions.ApplicationException;
 import app.groopy.chatservice.domain.models.entities.ChatInfoDto;
+import app.groopy.chatservice.domain.models.entities.ChatMessageDto;
 import app.groopy.chatservice.domain.models.requests.ChatDetailsRequestDto;
+import app.groopy.chatservice.domain.models.requests.ChatHistoryRequestDto;
 import app.groopy.chatservice.domain.models.requests.ChatMessageRequestDto;
 import app.groopy.chatservice.domain.models.requests.CreateChatRoomRequestDto;
 import app.groopy.chatservice.domain.resolver.InfrastructureExceptionResolver;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ApplicationService {
@@ -38,7 +41,7 @@ public class ApplicationService {
 
     public List<ChatInfoDto> getDetails(ChatDetailsRequestDto request) throws ApplicationException {
         try {
-            var result = domainService.get(request.getIds());
+            var result = domainService.getChatsDetails(request.getIds());
             LOGGER.info("chat rooms fetched successfully: {}", result);
             return result;
         } catch (Exception e) {
@@ -54,4 +57,13 @@ public class ApplicationService {
             throw InfrastructureExceptionResolver.resolve(e);
         }
     }
+
+    public Map<String, List<ChatMessageDto>> getHistory(ChatHistoryRequestDto request) throws ApplicationException {
+        try {
+            var result = domainService.getChatHistory(request.getChannels(), request.getDateFrom(), request.getDateTo());
+            LOGGER.info("chat history fetched successfully: {}", result);
+            return result;
+        } catch (Exception e) {
+            throw InfrastructureExceptionResolver.resolve(e);
+        }    }
 }

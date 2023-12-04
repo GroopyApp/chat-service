@@ -1,4 +1,4 @@
-package app.groopy.chatservice.infrastructure.models;
+package app.groopy.chatservice.infrastructure.models.chatinfo;
 
 import lombok.Builder;
 import lombok.Data;

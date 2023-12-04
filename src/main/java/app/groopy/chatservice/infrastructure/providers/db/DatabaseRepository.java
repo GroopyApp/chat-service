@@ -8,5 +8,6 @@ import java.util.List;
 public interface DatabaseRepository extends MongoRepository<ChatEntity, String> {
 
     List<ChatEntity> findAllByUuidIn(List<String> uuids);
+    List<ChatEntity> findAllByChannelNameIn(List<String> channelNames);
 
 }
