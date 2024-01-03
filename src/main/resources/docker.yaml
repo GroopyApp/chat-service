@@ -2,7 +2,7 @@ spring:
   application.name: chat-service
   data:
     mongodb:
-      uri: mongodb+srv://dev-root:7zEjNdGSF6N3O9yC@expat-db.ycd6koy.mongodb.net/dev?retryWrites=true&w=majority
+      uri: ${MONGO_DB_URI}
 
 grpc:
   server:
@@ -12,3 +12,5 @@ grpc:
 
 pubnub:
   host: https://ps.pndsn.com/ps.pndsn.com/
+  pub-key: ${PUBNUB_PUB_KEY}
+  sub-key: ${PUBNUB_SUB_KEY}
