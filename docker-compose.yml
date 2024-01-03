@@ -1,9 +1,10 @@
 version: '3.8'
 services:
-
   chat-service:
     environment:
       MONGO_DB_URI: mongodb://root:root@localhost:27017/groopy
+      PUBNUB_PUB_KEY: pub-c-111111
+      PUBNUB_SUB_KEY: sub-c-222222
 
     build: .
     ports:

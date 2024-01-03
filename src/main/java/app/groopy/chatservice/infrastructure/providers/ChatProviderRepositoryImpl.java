@@ -30,12 +30,15 @@ import java.util.List;
 
 @Service
 public class ChatProviderRepositoryImpl implements ChatProviderRepository {
-
-
     private final Logger LOGGER = LoggerFactory.getLogger(ChatProviderRepositoryImpl.class);
     private final PubNubRepository pubNubRepository;
     private final DatabaseRepository databaseRepository;
     private final ProviderMapper providerMapper;
+
+    @Value("${pubnub.pub-key}")
+    private String PUB_KEY;
+    @Value("${pubnub.sub-key}")
+    private String SUB_KEY;
 
     @SneakyThrows
     @Autowired
@@ -70,6 +73,7 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
         }
 
         Response<String> createChannelResponse = pubNubRepository.createChannel(
+                SUB_KEY,
                 request.getChannelName(),
                 "callback",
                 request.getGroupName(),
@@ -103,6 +107,8 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
     @SneakyThrows
     public Integer fireMessage(ChatMessageRequestDto chatMessageRequestDto) {
         var response = pubNubRepository.fireMessage(
+                SUB_KEY,
+                PUB_KEY,
                 chatMessageRequestDto.getChannelId(),
                 "callback",
                 chatMessageRequestDto.getGroupId(),
