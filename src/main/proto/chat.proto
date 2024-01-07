@@ -24,7 +24,8 @@ message CreateChatRoomResponse {
 }
 
 message ChatDetailsRequest {
-  repeated string ids = 1;
+  string user_id = 1;
+  repeated string ids = 2;
 }
 
 message ChatDetailsResponse {
@@ -39,9 +40,10 @@ message ChatMessageRequest {
 }
 
 message ChatHistoryRequest {
-  repeated string channels = 1;
-  string date_from = 2;
-  string date_to = 3;
+  string user_id = 1;
+  repeated string channels = 2;
+  string date_from = 3;
+  string date_to = 4;
 }
 
 message ChatHistoryResponse {
