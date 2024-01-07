@@ -45,6 +45,11 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
     private final DatabaseRepository databaseRepository;
     private final ProviderMapper providerMapper;
 
+    @Value("${pubnub.pub-key}")
+    private String PUB_KEY;
+    @Value("${pubnub.sub-key}")
+    private String SUB_KEY;
+
     @SneakyThrows
     @Autowired
     public ChatProviderRepositoryImpl(@Value("${pubnub.host}") String pubnubHost,
@@ -78,6 +83,7 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
         }
 
         Response<String> createChannelResponse = pubNubRepository.createChannel(
+                SUB_KEY,
                 request.getChannelName(),
                 "callback",
                 request.getGroupName(),
@@ -123,6 +129,8 @@ public class ChatProviderRepositoryImpl implements ChatProviderRepository {
     @SneakyThrows
     public FireMessageResponse fireMessage(FireMessageRequest fireMessageRequest) {
         var response = pubNubRepository.fireMessage(
+                SUB_KEY,
+                PUB_KEY,
                 fireMessageRequest.getChannelId(),
                 "callback",
                 fireMessageRequest.getGroupId(),
